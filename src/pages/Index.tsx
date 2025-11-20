@@ -7,6 +7,7 @@ import { ParticipantsTable } from "@/components/ParticipantsTable";
 import { InfoSection } from "@/components/InfoSection";
 import { TokenDetails } from "@/components/TokenDetails";
 import { AdminSettings } from "@/components/AdminSettings";
+import { AdminControls } from "@/components/AdminControls";
 import { UserPosition } from "@/components/UserPosition";
 import logo from "@/assets/provex-logo.png";
 
@@ -88,6 +89,9 @@ const Index = () => {
 
       {/* Admin Settings */}
       <AdminSettings />
+      
+      {/* Admin Controls */}
+      <AdminControls />
     </div>
   );
 };
