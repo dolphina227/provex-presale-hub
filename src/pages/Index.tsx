@@ -7,6 +7,7 @@ import { ParticipantsTable } from "@/components/ParticipantsTable";
 import { InfoSection } from "@/components/InfoSection";
 import { TokenDetails } from "@/components/TokenDetails";
 import { AdminSettings } from "@/components/AdminSettings";
+import { UserPosition } from "@/components/UserPosition";
 import logo from "@/assets/provex-logo.png";
 
 const Index = () => {
@@ -62,6 +63,9 @@ const Index = () => {
           <PresaleStats refreshTrigger={refreshTrigger} />
           <BuyPanel onBuySuccess={handleBuySuccess} />
         </div>
+
+        {/* User Position */}
+        <UserPosition refreshTrigger={refreshTrigger} onSuccess={handleBuySuccess} />
 
         {/* Participants Table */}
         <ParticipantsTable refreshTrigger={refreshTrigger} />

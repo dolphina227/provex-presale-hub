@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { useWeb3 } from "@/hooks/useWeb3";
-import { CONTRACTS, PRESALE_ABI, PRESALE_CONFIG, TOKENOMICS, USDC_DECIMALS } from "@/lib/constants";
-import { formatUnits } from "ethers";
-import { TrendingUp, Target, Coins, ShieldCheck } from "lucide-react";
+import { CONTRACTS, PRESALE_ABI, TOKEN_CONFIG, TOKENOMICS } from "@/lib/constants";
+import { formatUnits, Contract } from "ethers";
+import { TrendingUp, Target, Coins, Activity, DollarSign, ShoppingBag } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 interface PresaleData {
   isLive: boolean;
-  priceTokensPerUSDC: bigint;
+  isFinalized: boolean;
+  success: boolean;
   soldTokens: bigint;
-  hardcapTokens: bigint;
+  totalUsdcIn: bigint;
+  presaleTokens: bigint;
+  hardCapUsdc: bigint;
+  minUsdc: bigint;
+  tokensPerUsdc: bigint;
 }
 
 export const PresaleStats = ({ refreshTrigger }: { refreshTrigger: number }) => {
@@ -26,24 +32,34 @@ export const PresaleStats = ({ refreshTrigger }: { refreshTrigger: number }) => 
       }
 
       try {
-        const presaleContract = new (await import("ethers")).Contract(
+        const presaleContract = new Contract(
           CONTRACTS.presale,
           PRESALE_ABI,
           provider
         );
 
-        const [isLive, priceTokensPerUSDC, soldTokens, hardcapTokens] = await Promise.all([
+        const [isLive, isFinalized, success, sold, totalUsdc, presaleTokens, hardCapUsdc, minUsdc, tokensPerUsdc] = await Promise.all([
           presaleContract.isLive(),
-          presaleContract.priceTokensPerUSDC(),
+          presaleContract.isFinalized(),
+          presaleContract.success(),
           presaleContract.soldTokens(),
-          presaleContract.hardcapTokens(),
+          presaleContract.totalUsdcIn(),
+          presaleContract.PRESALE_TOKENS(),
+          presaleContract.HARD_CAP_USDC(),
+          presaleContract.MIN_USDC(),
+          presaleContract.TOKENS_PER_USDC(),
         ]);
 
         setPresaleData({
           isLive,
-          priceTokensPerUSDC,
-          soldTokens,
-          hardcapTokens,
+          isFinalized,
+          success,
+          soldTokens: sold,
+          totalUsdcIn: totalUsdc,
+          presaleTokens,
+          hardCapUsdc,
+          minUsdc,
+          tokensPerUsdc,
         });
       } catch (error) {
         console.error("Error fetching presale data:", error);
@@ -57,29 +73,35 @@ export const PresaleStats = ({ refreshTrigger }: { refreshTrigger: number }) => 
 
   const calculateProgress = () => {
     if (!presaleData) return 0;
-    const progress = (Number(presaleData.soldTokens) / Number(presaleData.hardcapTokens)) * 100;
-    return Math.min(progress, 100);
+    return Number((presaleData.soldTokens * 100n) / presaleData.presaleTokens);
   };
 
-  const calculateRaisedUSDC = () => {
-    if (!presaleData) return "0";
-    const raised = Number(presaleData.soldTokens) / Number(presaleData.priceTokensPerUSDC) * Math.pow(10, USDC_DECIMALS);
-    return raised.toFixed(2);
+  const getStatusText = () => {
+    if (!presaleData) return "Loading...";
+    if (!presaleData.isFinalized && presaleData.isLive) return "Live";
+    if (!presaleData.isFinalized && !presaleData.isLive) return "Paused";
+    if (presaleData.isFinalized && presaleData.success) return "Finalized (Success)";
+    if (presaleData.isFinalized && !presaleData.success) return "Finalized (Failed – Refund Enabled)";
+    return "Unknown";
   };
 
-  const StatCard = ({ icon: Icon, label, value, gradient = false }: any) => (
+  const getStatusVariant = () => {
+    if (!presaleData) return "secondary";
+    if (!presaleData.isFinalized && presaleData.isLive) return "default";
+    if (!presaleData.isFinalized && !presaleData.isLive) return "secondary";
+    if (presaleData.isFinalized && presaleData.success) return "default";
+    return "destructive";
+  };
+
+  const StatCard = ({ icon: Icon, label, value }: any) => (
     <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-4">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${gradient ? "gradient-bg" : "bg-secondary"}`}>
+        <div className="p-2 rounded-lg bg-secondary">
           <Icon className="h-5 w-5 text-foreground" />
         </div>
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">{label}</p>
-          {loading ? (
-            <Skeleton className="h-6 w-24 mt-1" />
-          ) : (
-            <p className={`text-lg font-bold ${gradient ? "gradient-text" : ""}`}>{value}</p>
-          )}
+          <div className="text-lg font-bold mt-1">{value}</div>
         </div>
       </div>
     </div>
@@ -96,64 +118,78 @@ export const PresaleStats = ({ refreshTrigger }: { refreshTrigger: number }) => 
         <StatCard
           icon={Coins}
           label="Total Supply"
-          value={`${TOKENOMICS.presaleAllocation.toLocaleString()} ProveX 2.0`}
-        />
-        <StatCard
-          icon={Target}
-          label="Presale Hardcap"
-          value={`${PRESALE_CONFIG.hardcapUSDC.toLocaleString()} USDC`}
+          value={loading ? <Skeleton className="h-6 w-32" /> : `${TOKEN_CONFIG.totalSupply.toLocaleString()} ${TOKEN_CONFIG.symbol}`}
         />
         <StatCard
           icon={TrendingUp}
-          label="Minimum Buy"
-          value={`${PRESALE_CONFIG.minBuyUSDC} USDC`}
+          label="Hardcap"
+          value={loading ? <Skeleton className="h-6 w-24" /> : `${presaleData ? formatUnits(presaleData.hardCapUsdc, 6) : "8,000"} USDC`}
         />
         <StatCard
-          icon={ShieldCheck}
+          icon={DollarSign}
+          label="Minimum Buy"
+          value={loading ? <Skeleton className="h-6 w-24" /> : `${presaleData ? formatUnits(presaleData.minUsdc, 6) : "10"} USDC`}
+        />
+        <StatCard
+          icon={Coins}
+          label="Rate"
+          value={loading ? <Skeleton className="h-6 w-24" /> : `1 USDC = ${presaleData ? Number(presaleData.tokensPerUsdc).toLocaleString() : "6,250"} ProveX`}
+        />
+        <StatCard
+          icon={Activity}
           label="Status"
-          value={loading ? "..." : presaleData?.isLive ? "Live" : "Not Live"}
-          gradient={presaleData?.isLive}
+          value={
+            loading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              <Badge variant={getStatusVariant()}>
+                {getStatusText()}
+              </Badge>
+            )
+          }
+        />
+        <StatCard
+          icon={Target}
+          label="Tokens Sold"
+          value={
+            loading ? (
+              <Skeleton className="h-6 w-32" />
+            ) : (
+              `${presaleData ? parseFloat(formatUnits(presaleData.soldTokens, 18)).toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"} / ${presaleData ? parseFloat(formatUnits(presaleData.presaleTokens, 18)).toLocaleString(undefined, { maximumFractionDigits: 0 }) : "50,000,000"}`
+            )
+          }
+        />
+        <StatCard
+          icon={ShoppingBag}
+          label="USDC Raised"
+          value={
+            loading ? (
+              <Skeleton className="h-6 w-32" />
+            ) : (
+              `${presaleData ? parseFloat(formatUnits(presaleData.totalUsdcIn, 6)).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"} USDC`
+            )
+          }
+        />
+        <StatCard
+          icon={Coins}
+          label="Presale Allocation"
+          value={loading ? <Skeleton className="h-6 w-32" /> : `${TOKENOMICS.presaleAllocation.toLocaleString()} (${TOKENOMICS.presalePercent}%)`}
+        />
+        <StatCard
+          icon={Coins}
+          label="LP Allocation"
+          value={loading ? <Skeleton className="h-6 w-32" /> : `${TOKENOMICS.lpAllocation.toLocaleString()} (${TOKENOMICS.lpPercent}%)`}
         />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Presale Progress</span>
+          <span className="text-muted-foreground">Progress</span>
           <span className="font-semibold">
-            {loading ? (
-              <Skeleton className="h-4 w-16 inline-block" />
-            ) : (
-              `${calculateProgress().toFixed(2)}%`
-            )}
+            {loading ? <Skeleton className="h-4 w-12 inline-block" /> : `${calculateProgress()}%`}
           </span>
         </div>
         <Progress value={calculateProgress()} className="h-3" />
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">
-            {loading ? (
-              <Skeleton className="h-4 w-32 inline-block" />
-            ) : (
-              `${formatUnits(presaleData?.soldTokens || 0n, 18)} / ${formatUnits(
-                presaleData?.hardcapTokens || 0n,
-                18
-              )} Tokens`
-            )}
-          </span>
-          <span className="font-semibold text-primary">
-            {loading ? <Skeleton className="h-4 w-24 inline-block" /> : `≈ ${calculateRaisedUSDC()} USDC raised`}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">Presale Allocation</p>
-          <p className="text-xl font-bold gradient-text">{TOKENOMICS.presalePercent}%</p>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">LP Allocation</p>
-          <p className="text-xl font-bold gradient-text">{TOKENOMICS.lpPercent}%</p>
-        </div>
       </div>
     </div>
   );

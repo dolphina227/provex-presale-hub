@@ -18,7 +18,7 @@ export const AdminSettings = () => {
 
   // Admin addresses - add your admin wallet addresses here
   const ADMIN_ADDRESSES = [
-    "0x0000000000000000000000000000000000000000", // Replace with actual admin address
+    "0x432b52a5fafe90f831db31a70381459110f17280",
   ].map((addr) => addr.toLowerCase());
 
   useEffect(() => {

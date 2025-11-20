@@ -17,8 +17,11 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
   const [usdcAmount, setUsdcAmount] = useState("");
   const [tokensToReceive, setTokensToReceive] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
-  const [pricePerUSDC, setPricePerUSDC] = useState<bigint>(0n);
+  const [tokensPerUSDC, setTokensPerUSDC] = useState<bigint>(0n);
   const [isPresaleLive, setIsPresaleLive] = useState(false);
+  const [isFinalized, setIsFinalized] = useState(false);
+  const [hardCapUsdc, setHardCapUsdc] = useState<bigint>(0n);
+  const [totalUsdcIn, setTotalUsdcIn] = useState<bigint>(0n);
   const [presaleEnded, setPresaleEnded] = useState(false);
 
   useEffect(() => {
@@ -32,13 +35,19 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
           provider
         );
 
-        const [isLive, price] = await Promise.all([
+        const [isLive, isFinalized, tokensPerUsdc, hardCap, totalUsdc] = await Promise.all([
           presaleContract.isLive(),
-          presaleContract.priceTokensPerUSDC(),
+          presaleContract.isFinalized(),
+          presaleContract.TOKENS_PER_USDC(),
+          presaleContract.HARD_CAP_USDC(),
+          presaleContract.totalUsdcIn(),
         ]);
 
         setIsPresaleLive(isLive);
-        setPricePerUSDC(price);
+        setIsFinalized(isFinalized);
+        setTokensPerUSDC(tokensPerUsdc);
+        setHardCapUsdc(hardCap);
+        setTotalUsdcIn(totalUsdc);
 
         // Check if presale ended
         const now = Math.floor(Date.now() / 1000);
@@ -53,10 +62,10 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
   }, [provider]);
 
   useEffect(() => {
-    if (usdcAmount && pricePerUSDC > 0n) {
+    if (usdcAmount && tokensPerUSDC > 0n) {
       try {
         const usdcAmountBigInt = parseUnits(usdcAmount, USDC_DECIMALS);
-        const tokens = (usdcAmountBigInt * pricePerUSDC) / BigInt(10 ** USDC_DECIMALS);
+        const tokens = (usdcAmountBigInt * tokensPerUSDC) / BigInt(10 ** USDC_DECIMALS);
         setTokensToReceive(formatUnits(tokens, 18));
       } catch {
         setTokensToReceive("0");
@@ -64,7 +73,7 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
     } else {
       setTokensToReceive("0");
     }
-  }, [usdcAmount, pricePerUSDC]);
+  }, [usdcAmount, tokensPerUSDC]);
 
   const handleBuy = async () => {
     if (!isConnected) {
@@ -80,6 +89,13 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
     const amount = parseFloat(usdcAmount);
     if (isNaN(amount) || amount < PRESALE_CONFIG.minBuyUSDC) {
       toast.error(`Minimum buy amount is ${PRESALE_CONFIG.minBuyUSDC} USDC`);
+      return;
+    }
+
+    // Check if purchase would exceed hardcap
+    const usdcAmountBigInt = parseUnits(usdcAmount, USDC_DECIMALS);
+    if (totalUsdcIn + usdcAmountBigInt > hardCapUsdc) {
+      toast.error("Purchase would exceed hardcap");
       return;
     }
 
@@ -120,8 +136,8 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
     }
   };
 
-  const canBuy = isConnected && isCorrectNetwork && isPresaleLive && !presaleEnded;
-  const showWarning = !isPresaleLive || presaleEnded;
+  const canBuy = isConnected && isCorrectNetwork && isPresaleLive && !presaleEnded && !isFinalized;
+  const showWarning = !isPresaleLive || presaleEnded || isFinalized;
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
@@ -139,7 +155,11 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {presaleEnded ? "The presale has ended" : "Presale is not currently live"}
+            {isFinalized 
+              ? "Presale has been finalized" 
+              : presaleEnded 
+              ? "The presale has ended" 
+              : "Presale is not currently live"}
           </AlertDescription>
         </Alert>
       )}

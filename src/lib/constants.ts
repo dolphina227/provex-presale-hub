@@ -8,7 +8,7 @@ export const PULSECHAIN_CONFIG = {
 
 // Contract Addresses
 export const CONTRACTS = {
-  presale: "0xFd837c0B245048C986bA9F1D2edaD5a980a8decE",
+  presale: "0x9c7B9B8C9c80Aa67C1AB1330e502df4e965F59b4",
   token: "0x2c9310144FAF95C59A7f5ff70c532c71d9f7Dc29",
   usdc: "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07",
 };
@@ -58,11 +58,26 @@ export const TAX_INFO = {
 
 // Contract ABIs
 export const PRESALE_ABI = [
-  "function isLive() external view returns (bool)",
-  "function priceTokensPerUSDC() external view returns (uint256)",
+  "function usdc() external view returns (address)",
+  "function token() external view returns (address)",
+  "function treasury() external view returns (address)",
+  "function PRESALE_TOKENS() external view returns (uint256)",
+  "function HARD_CAP_USDC() external view returns (uint256)",
+  "function MIN_USDC() external view returns (uint256)",
+  "function TOKENS_PER_USDC() external view returns (uint256)",
   "function soldTokens() external view returns (uint256)",
-  "function hardcapTokens() external view returns (uint256)",
+  "function totalUsdcIn() external view returns (uint256)",
+  "function isLive() external view returns (bool)",
+  "function isFinalized() external view returns (bool)",
+  "function success() external view returns (bool)",
+  "function contributions(address user) external view returns (uint256)",
+  "function purchasedTokens(address user) external view returns (uint256)",
   "function buy(uint256 usdcAmount) external",
+  "function finalize() external",
+  "function claimTokens() external",
+  "function claimRefund() external",
+  "function setLive(bool live) external",
+  "function isOngoing() external view returns (bool)",
   "event Buy(address indexed buyer, uint256 usdcIn, uint256 tokensOut)",
 ];
 
