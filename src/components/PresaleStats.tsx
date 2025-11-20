@@ -133,7 +133,7 @@ export const PresaleStats = ({ refreshTrigger }: { refreshTrigger: number }) => 
         <StatCard
           icon={Coins}
           label="Rate"
-          value={loading ? <Skeleton className="h-6 w-24" /> : `1 USDC = ${presaleData ? Number(presaleData.tokensPerUsdc).toLocaleString() : "6,250"} ProveX`}
+          value={loading ? <Skeleton className="h-6 w-24" /> : `1 USDC = ${presaleData ? parseFloat(formatUnits(presaleData.tokensPerUsdc, 18)).toLocaleString(undefined, { maximumFractionDigits: 0 }) : "6,250"} ProveX`}
         />
         <StatCard
           icon={Activity}
