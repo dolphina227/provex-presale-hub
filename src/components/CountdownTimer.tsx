@@ -17,7 +17,7 @@ export const CountdownTimer = () => {
     const calculateTimeLeft = () => {
       const now = Math.floor(Date.now() / 1000);
       const startTime = PRESALE_CONFIG.startTimestamp;
-      const endTime = startTime + PRESALE_CONFIG.durationDays * 24 * 60 * 60;
+      const endTime = PRESALE_CONFIG.endTimestamp;
 
       if (now < startTime) {
         setStatus("not-started");

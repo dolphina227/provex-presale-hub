@@ -5,6 +5,8 @@ import { PresaleStats } from "@/components/PresaleStats";
 import { BuyPanel } from "@/components/BuyPanel";
 import { ParticipantsTable } from "@/components/ParticipantsTable";
 import { InfoSection } from "@/components/InfoSection";
+import { TokenDetails } from "@/components/TokenDetails";
+import { AdminSettings } from "@/components/AdminSettings";
 import logo from "@/assets/provex-logo.png";
 
 const Index = () => {
@@ -49,6 +51,9 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 space-y-8">
+        {/* Token Details */}
+        <TokenDetails />
+
         {/* Countdown */}
         <CountdownTimer />
 
@@ -76,6 +81,9 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Admin Settings */}
+      <AdminSettings />
     </div>
   );
 };

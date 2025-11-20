@@ -42,7 +42,7 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
 
         // Check if presale ended
         const now = Math.floor(Date.now() / 1000);
-        const endTime = PRESALE_CONFIG.startTimestamp + PRESALE_CONFIG.durationDays * 24 * 60 * 60;
+        const endTime = PRESALE_CONFIG.endTimestamp;
         setPresaleEnded(now > endTime);
       } catch (error) {
         console.error("Error fetching presale info:", error);
