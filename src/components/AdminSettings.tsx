@@ -21,6 +21,9 @@ export const AdminSettings = () => {
     "0x432b52a5fafe90f831db31a70381459110f17280",
   ].map((addr) => addr.toLowerCase());
 
+  console.log("Connected account:", account?.toLowerCase());
+  console.log("Is admin?", account ? ADMIN_ADDRESSES.includes(account.toLowerCase()) : false);
+
   useEffect(() => {
     if (account) {
       const isAdminUser = ADMIN_ADDRESSES.includes(account.toLowerCase());
