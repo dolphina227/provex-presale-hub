@@ -22,7 +22,6 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
   const [isFinalized, setIsFinalized] = useState(false);
   const [hardCapUsdc, setHardCapUsdc] = useState<bigint>(0n);
   const [totalUsdcIn, setTotalUsdcIn] = useState<bigint>(0n);
-  const [presaleEnded, setPresaleEnded] = useState(false);
 
   useEffect(() => {
     const fetchPresaleInfo = async () => {
@@ -48,11 +47,6 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
         setTokensPerUSDC(tokensPerUsdc);
         setHardCapUsdc(hardCap);
         setTotalUsdcIn(totalUsdc);
-
-        // Check if presale ended
-        const now = Math.floor(Date.now() / 1000);
-        const endTime = PRESALE_CONFIG.endTimestamp;
-        setPresaleEnded(now > endTime);
       } catch (error) {
         console.error("Error fetching presale info:", error);
       }
@@ -136,8 +130,8 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
     }
   };
 
-  const canBuy = isConnected && isCorrectNetwork && isPresaleLive && !presaleEnded && !isFinalized;
-  const showWarning = !isPresaleLive || presaleEnded || isFinalized;
+  const canBuy = isConnected && isCorrectNetwork && isPresaleLive && !isFinalized;
+  const showWarning = !isPresaleLive || isFinalized;
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
@@ -157,8 +151,6 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
           <AlertDescription>
             {isFinalized 
               ? "Presale has been finalized" 
-              : presaleEnded 
-              ? "The presale has ended" 
               : "Presale is not currently live"}
           </AlertDescription>
         </Alert>

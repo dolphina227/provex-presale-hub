@@ -27,18 +27,6 @@ export const USDC_DECIMALS = 6;
 export const PRESALE_CONFIG = {
   hardcapUSDC: 8_000,
   minBuyUSDC: 10,
-  durationDays: 3,
-  // Get timestamps from localStorage or use defaults
-  get startTimestamp() {
-    const saved = localStorage.getItem("presale_start_timestamp");
-    return saved ? parseInt(saved) : Math.floor(Date.now() / 1000);
-  },
-  get endTimestamp() {
-    const saved = localStorage.getItem("presale_end_timestamp");
-    if (saved) return parseInt(saved);
-    const start = this.startTimestamp;
-    return start + this.durationDays * 24 * 60 * 60;
-  },
 };
 
 // Tokenomics
