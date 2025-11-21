@@ -19,7 +19,6 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tokensPerUSDC, setTokensPerUSDC] = useState<bigint>(0n);
   const [isPresaleLive, setIsPresaleLive] = useState(false);
-  const [isFinalized, setIsFinalized] = useState(false);
   const [hardCapUsdc, setHardCapUsdc] = useState<bigint>(0n);
   const [totalUsdcIn, setTotalUsdcIn] = useState<bigint>(0n);
 
@@ -34,16 +33,14 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
           provider
         );
 
-        const [isLive, isFinalized, tokensPerUsdc, hardCap, totalUsdc] = await Promise.all([
+        const [isLive, tokensPerUsdc, hardCap, totalUsdc] = await Promise.all([
           presaleContract.isLive(),
-          presaleContract.isFinalized(),
           presaleContract.TOKENS_PER_USDC(),
           presaleContract.HARD_CAP_USDC(),
           presaleContract.totalUsdcIn(),
         ]);
 
         setIsPresaleLive(isLive);
-        setIsFinalized(isFinalized);
         setTokensPerUSDC(tokensPerUsdc);
         setHardCapUsdc(hardCap);
         setTotalUsdcIn(totalUsdc);
@@ -130,8 +127,8 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
     }
   };
 
-  const canBuy = isConnected && isCorrectNetwork && isPresaleLive && !isFinalized;
-  const showWarning = !isPresaleLive || isFinalized;
+  const canBuy = isConnected && isCorrectNetwork && isPresaleLive;
+  const showWarning = !isPresaleLive;
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
@@ -149,9 +146,7 @@ export const BuyPanel = ({ onBuySuccess }: BuyPanelProps) => {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {isFinalized 
-              ? "Presale has been finalized" 
-              : "Presale is not currently live"}
+            Presale is not currently live. Please contact admin to activate the presale.
           </AlertDescription>
         </Alert>
       )}
