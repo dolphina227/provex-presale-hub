@@ -106,7 +106,7 @@ const Sacrifice = () => {
               <img src={logo} alt="ProveX 2.0" className="h-12 w-12" />
               <div>
                 <h1 className="text-xl font-bold gradient-text">ProveX 2.0 Sacrifice</h1>
-                <p className="text-xs text-muted-foreground">On PulseChain</p>
+                <p className="text-xs text-muted-foreground">On Ethereum</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -130,7 +130,7 @@ const Sacrifice = () => {
             Sacrifice Tracker
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Track all sacrifices made to the ProveX 2.0 sacrifice address on PulseChain
+            Track all sacrifices made to the ProveX 2.0 sacrifice address on Ethereum
           </p>
         </div>
 
@@ -147,7 +147,7 @@ const Sacrifice = () => {
                   <Skeleton className="h-8 w-32 mt-1" />
                 ) : (
                   <p className="text-2xl font-bold gradient-text">
-                    {parseFloat(balance).toLocaleString(undefined, { maximumFractionDigits: 4 })} PLS
+                    {parseFloat(balance).toLocaleString(undefined, { maximumFractionDigits: 4 })} ETH
                   </p>
                 )}
               </div>
@@ -209,7 +209,7 @@ const Sacrifice = () => {
                     From
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Amount (PLS)
+                    Amount (ETH)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Block
